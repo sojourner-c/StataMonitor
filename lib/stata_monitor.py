@@ -2,9 +2,9 @@
 
 import os
 import re
+import getpass
 import subprocess
 
-import getpass
 import win32com.client as win32
 
 
