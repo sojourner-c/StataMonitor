@@ -1,5 +1,5 @@
 # Stata Monitor
-Run .do file in batch mode and, upon exit, receive email stating if .do failed.
+Run .do file in batch mode and receive email stating if .do failed.
 
 # Installation and Use Instructions
 
@@ -30,12 +30,11 @@ Run .do file in batch mode and, upon exit, receive email stating if .do failed.
 2. cd to base level of the Stata Monitor.
 3. Type `python` and hit enter.
 4. Type `from lib import stata_monitor` and hit enter.
-5. Create a python variable with the full path and file name of the .do file you wish to run. For example, a .do file named "test.do" the directory "C:\stata\do" would be `file = r"C:\stata\do\test.do".
-6. Type stata_monitor.stata_monitor(file) and hit enter. Replace file with whatever you named your python variable or with simply with a text string off the full path and file name.
+5. Create a python variable with the full path and file name of the .do file you wish to run. For example, a .do file named "test.do" the directory "C:\stata\do" type `file = r"C:\stata\do\test.do"` and hit enter.
+6. Type `stata_monitor.stata_monitor(file)` and hit enter. Replace file with whatever you named your python variable or with a raw string off the full path and file name.
 
 
 # Testing Python Updates
-
 Changes to the Python scripts or Modules can be tested by running the unittests located in the "tests" folder.
 
 1. Open a command prompt.
