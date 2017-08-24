@@ -39,5 +39,5 @@ Changes to the Python scripts or Modules can be tested by running the unittests 
 
 1. Open a command prompt.
 2. cd to base level of the Stata Monitor.
-3. Enter `python -m unittest discover -s tests` and hit enter.
+3. Enter `python -m unittest discover -s test` and hit enter.
 4. If necessary edit the changes made until the tests run without failures.
