@@ -8,64 +8,86 @@ import getpass
 import win32com.client as win32
 
 
-def _run_program(FileName, *params):
-    """Run .do file in batch mode."""
+def _set_up(file):
+	"""Return tuple with .log loc+name, do filename, then cds to log loc.
 
-    cmd = [r'\\dc-stata\stata$\StataSE-64.exe', '/e', 'do', FileName]
-    for param in params:
-        cmd.append(param)
-    a = subprocess.Popen(cmd, shell=True)
-    a.wait()
-
-
-def _send_email():
-    """Get Email Address, Call Log Scanner, and Email Result."""
-
-    # Get Email Address
-    username = getpass.getuser()
-    email = username.replace('_', '.')
-
-    # Call Log Reader
-    log = re.sub('do$', 'log', filename)
-    cd = os.path.dirname(os.path.abspath(__file__))
-    body =  _scan_log(os.path.join(cd, log))
-
-    # Send Email
-    outlook = win32.Dispatch('outlook.application')
-    mail = outlook.CreateItem(0)
-    mail.To = email + '@ei.com'
-    mail.Subject = 'Stata Monitor'
-    mail.Body = body
-    mail.Send()
-
-
-def _scan_log(logFileName):
-    """Returns string with .do completion status for body of email.
-
-	`logFileName` is a .log file in directory of the .do file.
-
-	Opens log file, checks for Stata return code, deletes log.
+	`file` string with full path and  Stata .do file name with extension.
 	"""
 
-    # Stata error codes range from 1-999.
-    with open(logFileName, 'r') as f:
-        for line in f:
-            if re.search('r\([1-9][0-9]?[0-9]?[0-9]?\)', line):
-                message = 'The program ' + filename + ' terminated due to errors.'
-                break
-        else:
-            message = 'The program ' + filename + ' completed without errors.'
-    os.remove(logFileName)
-    return message
+	log = re.sub('do$', 'log', file)
+	i = file.rfind('\\')
+	path = file[:i]
+	os.chdir(path)
+	do_filename = file[i+1:]
+	log_name_tup = (log, do_filename)
+	return log_name_tup
 
 
-def stata_monitor(path, filename, *params):
-    """Run .do file, scan log, send email with completion status.
+def _run_program(file, *params):
+	"""Run .do file in batch mode and wait till completion.
 
-	`path` is a string of the directory containing `filename`.
-	`filename` is a Stata .do file including the extension.
+	`file` string with full path and  Stata .do file name with extension.
 	`params` are optional parameters for running .do in batch mode.
 	"""
 
-    _run_program(os.path.join(path, filename), *params)
-    _send_email()
+	cmd = [r'\\dc-stata\stata$\StataSE-64.exe', '/e', 'do', file]
+	for param in params:
+		cmd.append(param)
+	a = subprocess.Popen(cmd, shell=True)
+	a.wait()
+
+
+def _send_email(log_name_tup):
+	"""Calls _scan_log and sends email with returned text as body.
+
+	`log_name_tup` tuple with .log location + name and name of do file.
+	"""
+
+	# Get Email Address
+	username = getpass.getuser()
+	email = username.replace('_', '.')
+
+	# Call Log Reader
+	body = _scan_log(log_name_tup)
+
+	# Send Email
+	outlook = win32.Dispatch('outlook.application')
+	mail = outlook.CreateItem(0)
+	mail.To = email + '@ei.com'
+	mail.Subject = 'Stata Monitor'
+	mail.Body = body
+	mail.Send()
+
+
+def _scan_log(log_name_tup):
+	"""Returns string with .do completion status for body of email.
+
+	`log_name_tup` tuple with .log location + name and name of do file.
+	"""
+
+	log = log_name_tup[0]
+	filename = log_name_tup[1]
+	# Stata error codes range from 1-999.
+	with open(log, 'r') as f:
+		for line in f:
+			if re.search('r\([1-9][0-9]?[0-9]?[0-9]?\)', line):
+				message = 'The program ' + filename + ' terminated due to errors.'
+				break
+		else:
+			message = 'The program ' + filename + ' completed without errors.'
+	os.remove(log)
+	return message
+
+
+def stata_monitor(file, *params):
+	"""Run .do file, scan log, send email with completion status.
+
+	`file` string with full path and  Stata .do file name with extension.
+	`params` are optional parameters for running .do in batch mode.
+	"""
+
+	current_cd = os.path.dirname(os.path.abspath(__file__))
+	log_name_tup = _set_up(file)
+	_run_program(file, *params)
+	_send_email(log_name_tup)
+	os.chdir(current_cd)
