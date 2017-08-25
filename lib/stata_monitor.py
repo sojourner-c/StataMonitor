@@ -37,7 +37,7 @@ def _run_program(file, *params):
 	a.wait()
 
 
-def _send_email(log_name_tup):
+def _send_email(log_name_tup, delete_log):
 	"""Calls _scan_log and sends email with returned text as body.
 
 	`log_name_tup` tuple with .log location + name and name of do file.
@@ -48,7 +48,7 @@ def _send_email(log_name_tup):
 	email = username.replace('_', '.')
 
 	# Call Log Reader
-	body = _scan_log(log_name_tup)
+	body = _scan_log(log_name_tup, delete_log)
 
 	# Send Email
 	outlook = win32.Dispatch('outlook.application')
@@ -56,10 +56,12 @@ def _send_email(log_name_tup):
 	mail.To = email + '@ei.com'
 	mail.Subject = 'Stata Monitor'
 	mail.Body = body
+	if not delete_log:
+		mail.Attachments.Add(log_name_tup[0])
 	mail.Send()
 
 
-def _scan_log(log_name_tup):
+def _scan_log(log_name_tup, delete_log):
 	"""Returns string with .do completion status for body of email.
 
 	`log_name_tup` tuple with .log location + name and name of do file.
@@ -75,11 +77,12 @@ def _scan_log(log_name_tup):
 				break
 		else:
 			message = 'The program ' + filename + ' completed without errors.'
-	os.remove(log)
+	if delete_log:
+		os.remove(log)
 	return message
 
 
-def stata_monitor(file, *params):
+def stata_monitor(file, *params, delete_log=False):
 	"""Run .do file, scan log, send email with completion status.
 
 	`file` string with full path and  Stata .do file name with extension.
@@ -89,5 +92,5 @@ def stata_monitor(file, *params):
 	current_cd = os.path.dirname(os.path.abspath(__file__))
 	log_name_tup = _set_up(file)
 	_run_program(file, *params)
-	_send_email(log_name_tup)
+	_send_email(log_name_tup, delete_log)
 	os.chdir(current_cd)
