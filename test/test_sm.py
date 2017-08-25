@@ -9,18 +9,28 @@ from lib import stata_monitor
 class TestStataMonitor(unittest.TestCase):
 	"""Test stata_monitor.py"""
 
-	def setUp(self):
+	@classmethod
+	def setUpClass(self):
 		self.path = os.path.dirname(os.path.abspath(__file__)) + '\\do'
 		self.pass_file = self.path + '\\' + 'pass_test.do'
 		self.fail_file = self.path + '\\' + 'fail_test.do'
+		self.pass_log = self.pass_file[:-2] + 'log'
+		self.fail_log = self.fail_file[:-2] + 'log'
 		self.pass_body = 'The program pass_test.do completed without errors.'
 		self.fail_body = 'The program fail_test.do terminated due to errors.'
 
 
-	def test_stata_monitor(self):
-		"""Test that stata_monitor runs without errors."""
+	@classmethod
+	def tearDownClass(self):
+		os.remove(self.pass_log)
+
+
+	def test_log_delete(self):
+		"""Test that log_delete argument works correctly."""
 		stata_monitor.stata_monitor(self.pass_file)
-		stata_monitor.stata_monitor(self.fail_file)
+		self.assertTrue(os.path.isfile(self.pass_log))
+		stata_monitor.stata_monitor(self.fail_file, delete_log=True)
+		self.assertFalse(os.path.isfile(self.fail_log))
 
 
 	def test_body_no_rc(self):
