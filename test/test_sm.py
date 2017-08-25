@@ -27,7 +27,7 @@ class TestStataMonitor(unittest.TestCase):
 		"""Test _set_up, _run_program, and _scan_log run with good .do file."""
 		self.log_name_tup = stata_monitor._set_up(self.pass_file)
 		stata_monitor._run_program(self.pass_file)
-		body = stata_monitor._scan_log(self.log_name_tup)
+		body = stata_monitor._scan_log(self.log_name_tup, True)
 		self.assertEqual(body, self.pass_body)
 
 
@@ -35,5 +35,5 @@ class TestStataMonitor(unittest.TestCase):
 		"""Test _set_up, _run_program, and _scan_log run with bad .do file."""
 		self.log_name_tup = stata_monitor._set_up(self.fail_file)
 		stata_monitor._run_program(self.fail_file)
-		body = stata_monitor._scan_log(self.log_name_tup)
+		body = stata_monitor._scan_log(self.log_name_tup, True)
 		self.assertEqual(body, self.fail_body)
