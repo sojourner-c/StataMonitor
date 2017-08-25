@@ -56,6 +56,8 @@ def _send_email(log_name_tup, delete_log):
 	mail.To = email + '@ei.com'
 	mail.Subject = 'Stata Monitor'
 	mail.Body = body
+	if not delete_log:
+		mail.Attachments.Add(log_name_tup[0])
 	mail.Send()
 
 
