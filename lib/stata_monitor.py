@@ -72,7 +72,7 @@ def _scan_log(log_name_tup, delete_log):
 	# Stata error codes range from 1-999.
 	with open(log, 'r') as f:
 		for line in f:
-			if re.search('r\([1-9][0-9]?[0-9]?[0-9]?\)', line):
+			if re.search('r\([1-9][0-9]{0,3}\)', line):
 				message = 'The program ' + filename + ' terminated due to errors.'
 				break
 		else:
